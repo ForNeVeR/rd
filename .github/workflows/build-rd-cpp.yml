@@ -137,6 +137,7 @@ jobs:
         endif()
         set(ENV{PATH} "$ENV{GITHUB_WORKSPACE}${path_separator}$ENV{PATH}")
 
+        file(MAKE_DIRECTORY build)
         execute_process(
           COMMAND ${CMAKE_COMMAND}
             --build build
