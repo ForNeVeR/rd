@@ -86,7 +86,6 @@ jobs:
         message("::set-output name=timestamp::${current_date}")
 
     - name: ccache cache files
-      working-directory: ${{ env.working-dir }}
       uses: actions/cache@v2
       with:
         path: .ccache
