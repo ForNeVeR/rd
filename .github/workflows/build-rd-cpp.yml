@@ -15,9 +15,9 @@ jobs:
   build:
     defaults:
       run:
-        working-directory: ${{ join([github.workspace,"rd-cpp"], runner.path_separator)}}
+        working-directory: ${{ github.workspace}}${{ runner.SEP }}rd-cpp
     env:
-      working-dir: ${{ join([github.workspace,"rd-cpp"], runner.path_separator)}}
+      working-dir: ${{ github.workspace}}${{ runner.SEP }}rd-cpp
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     strategy:
@@ -29,19 +29,19 @@ jobs:
             os: windows-latest,
             cc: "cl", cxx: "cl",
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
-            path_separator:"\"
+            SEP: \
           }
         - {
             name: "Ubuntu Latest Clang", artifact: "Linux.tar.xz",
             os: ubuntu-latest,
             cc: "clang", cxx: "clang++",
-            path_separator:"/"
+            SEP: /
           }
         - {
             name: "macOS Latest Clang", artifact: "macOS.tar.xz",
             os: macos-latest,
             cc: "clang", cxx: "clang++",
-            path_separator:"/"
+            SEP: /
           }
 
     steps:
@@ -53,7 +53,7 @@ jobs:
       id: cache-ninja
       uses: actions/cache@v2
       with:
-        path: ${{ join([env.working-dir,"ninja"], runner.path_separator) }}
+        path: ${{ env.working-dir }}${{ runner.SEP }}ninja
         key: ${{ runner.os }}-ninja-
     - name: Download Ninja
       if: steps.cache-ninja.outputs.cache-hit != 'true'
@@ -87,7 +87,7 @@ jobs:
       id: cache-ccache
       uses: actions/cache@v2
       with:
-        path: ${{ join([env.working-dir,"ccache"], runner.path_separator) }}
+        path:  ${{ env.working-dir }}${{ runner.SEP }}ccache
         key: ${{ runner.os }}-ccache-
     - name: Download ccache
       if: steps.cache-ccache.outputs.cache-hit != 'true'
@@ -109,7 +109,7 @@ jobs:
     - name: ccache cache files
       uses: actions/cache@v2
       with:
-        path:  ${{ join([env.working-dir,".ccache"], runner.path_separator) }}
+        path:  ${{ env.working-dir }}${{ runner.SEP }}.ccache
         key: ${{ matrix.config.name }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
         restore-keys: |
           ${{ matrix.config.name }}-ccache-
@@ -206,7 +206,7 @@ jobs:
 
 
     - name: Pack
-      working-directory: ${{ join([env.working-dir,"instdir"], runner.path_separator) }}
+      working-directory: ${{ env.working-dir }}${{ runner.SEP }}instdir
       shell: cmake {0}
       run: |
         -E tar cJfv ../${{ matrix.config.artifact }} .
@@ -214,7 +214,7 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v1
       with:
-        path:  ${{ env.working-dir }}/${{ matrix.config.artifact }}
+        path:  ${{ env.working-dir }}${{ runner.SEP }}${{ matrix.config.artifact }}
         name: ${{ matrix.config.artifact }}
 
   release:
