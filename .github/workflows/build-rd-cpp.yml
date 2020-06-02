@@ -154,9 +154,10 @@ jobs:
         execute_process(COMMAND ccache -s)
 
     - name: Install Strip
+      working-directory: ${{ env.working-directory }}${{ matrix.config.SEP }}build
       shell: cmake {0}
       run: |
-        --install instdir -DENABLE_TESTS_OPTION:BOOL=OFF -DBUILD_TYPE=${{ env.BUILD_TYPE }} -P cmake_install.cmake
+        -DENABLE_TESTS_OPTION:BOOL=OFF -DBUILD_TYPE=${{ env.BUILD_TYPE }} -P cmake_install.cmake
 
 
     - name: Pack
