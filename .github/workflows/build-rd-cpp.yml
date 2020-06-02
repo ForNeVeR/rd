@@ -69,14 +69,12 @@ jobs:
 
         set(ninja_url "https://github.com/ninja-build/ninja/releases/download/v${ninja_version}/ninja-${ninja_suffix}")
         file(DOWNLOAD "${ninja_url}" ./ninja.zip SHOW_PROGRESS)
-        file(MAKE_DIRECTORY ninja)
         execute_process(COMMAND
-                        ${CMAKE_COMMAND} -E tar xvf ../ninja.zip
-                        WORKING_DIRECTORY ninja)
+                        ${CMAKE_COMMAND} -E tar xvf ./ninja.zip)
 
         if (NOT "${{ runner.os }}" STREQUAL "Windows")
           execute_process(
-            COMMAND chmod +x ninja/ninja
+            COMMAND chmod +x ninja
           )
         endif()
 
@@ -87,7 +85,6 @@ jobs:
       run: |
         set(ccache_url "https://github.com/cristianadam/ccache/releases/download/v$ENV{CCACHE_VERSION}/${{ runner.os }}.tar.xz")
         file(DOWNLOAD "${ccache_url}" ./ccache.tar.xz SHOW_PROGRESS)
-        file(MAKE_DIRECTORY ccache)
         execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ccache.tar.xz)
 
     - name: Prepare ccache timestamp
