@@ -46,8 +46,15 @@ jobs:
     - name: Get submodules
       run: git submodule update --init --recursive
       shell: cmd
+    - name: Cache Ninja
+      id: cache-ninja
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.working-dir }}/ninja
+        key: ${{ runner.os }}-ninja-
     - name: Download Ninja
-      working-directory: ${{ env.working-dir }}
+      if: steps.cache-ninja.outputs.cache-hit != 'true'
+      working-directory: ${{ env.working-dir }}/ninja
       id: download_ninja
       shell: cmake -P {0}
       run: |
@@ -73,8 +80,15 @@ jobs:
           )
         endif()
 
+    - name: Cache ccache
+      id: cache-ccache
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.working-dir }}/ccache
+        key: ${{ runner.os }}-ccache-
     - name: Download ccache
-      working-directory: ${{ env.working-dir }}
+      if: steps.cache-ccache.outputs.cache-hit != 'true'
+      working-directory: ${{ env.working-dir }}/ccache
       id: ccache
       shell: cmake -P {0}
       run: |
