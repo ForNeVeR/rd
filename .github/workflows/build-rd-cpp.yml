@@ -143,12 +143,12 @@ jobs:
         execute_process(
           COMMAND ${CMAKE_COMMAND}
             --build build
-            -D ENABLE_TESTS_OPTION:BOOL=OFF
-            -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
+            -DENABLE_TESTS_OPTION:BOOL=OFF
+            -DCMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
             -G Ninja
-            -D CMAKE_MAKE_PROGRAM=ninja
-            -D CMAKE_C_COMPILER_LAUNCHER=ccache
-            -D CMAKE_CXX_COMPILER_LAUNCHER=ccache
+            -DCMAKE_MAKE_PROGRAM=ninja
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
