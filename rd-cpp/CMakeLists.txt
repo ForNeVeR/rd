@@ -5,6 +5,7 @@ project(
         VERSION 1.0
 #        DESCRIPTION "C++ implementation of JetBrains IPC"
 #        HOMEPAGE_URL "https://github.com/jetbrains/rd"
+#       Test GH Actions
         LANGUAGES CXX
 )
 
