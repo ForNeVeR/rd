@@ -13,8 +13,11 @@ env:
 
 jobs:
   build:
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}\rd-cpp
     env:
-      working-dir: ./rd-cpp
+      working-dir: ${{ github.workspace }}\rd-cpp
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     strategy:
@@ -40,9 +43,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-
+    - name: HACK swap module link
+      run: git config --file=.gitmodules submodule.rd-cpp/thirdparty/spdlog.url https://github.com/gabime/spdlog.git
+    - name: Get submodules
+      run: git submodule update --init --recursive
+      continue-on-error: true
+    - name: Cache Ninja
+      id: cache-ninja
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.working-dir }}/ninja
+        key: ${{ runner.os }}-ninja-
     - name: Download Ninja
-      working-directory: ${{ working-dir }}
+      if: steps.cache-ninja.outputs.cache-hit != 'true'
       id: download_ninja
       shell: cmake -P {0}
       run: |
@@ -60,7 +73,8 @@ jobs:
 
         set(ninja_url "https://github.com/ninja-build/ninja/releases/download/v${ninja_version}/ninja-${ninja_suffix}")
         file(DOWNLOAD "${ninja_url}" ./ninja.zip SHOW_PROGRESS)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ninja.zip)
+        file(MAKE_DIRECTORY ninja)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ninja.zip -C ninja)
 
         if (NOT "${{ runner.os }}" STREQUAL "Windows")
           execute_process(
@@ -68,17 +82,23 @@ jobs:
           )
         endif()
 
+    - name: Cache ccache
+      id: cache-ccache
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.working-dir }}/ccache
+        key: ${{ runner.os }}-ccache-
     - name: Download ccache
-      working-directory: ${{ working-dir }}
+      if: steps.cache-ccache.outputs.cache-hit != 'true'
       id: ccache
       shell: cmake -P {0}
       run: |
         set(ccache_url "https://github.com/cristianadam/ccache/releases/download/v$ENV{CCACHE_VERSION}/${{ runner.os }}.tar.xz")
         file(DOWNLOAD "${ccache_url}" ./ccache.tar.xz SHOW_PROGRESS)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ccache.tar.xz)
+        file(MAKE_DIRECTORY ccache)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ccache.tar.xz -C ccache)
 
     - name: Prepare ccache timestamp
-      working-directory: ${{ working-dir }}
       id: ccache_cache_timestamp
       shell: cmake -P {0}
       run: |
@@ -86,16 +106,14 @@ jobs:
         message("::set-output name=timestamp::${current_date}")
 
     - name: ccache cache files
-      working-directory: ${{ working-dir }}
-      uses: actions/cache@v1.1.0
+      uses: actions/cache@v2
       with:
-        path: .ccache
+        path:  ${{ env.working-dir }}/.ccache
         key: ${{ matrix.config.name }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
         restore-keys: |
           ${{ matrix.config.name }}-ccache-
 
     - name: Configure
-      working-directory: ${{ working-dir }}
       shell: cmake -P {0}
       run: |
         set(ENV{CC} ${{ matrix.config.cc }})
@@ -124,6 +142,7 @@ jobs:
           COMMAND ${CMAKE_COMMAND}
             -S .
             -B build
+            -D ENABLE_TESTS_OPTION:BOOL=OFF
             -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
             -G Ninja
             -D CMAKE_MAKE_PROGRAM=ninja
@@ -137,7 +156,6 @@ jobs:
 
 
     - name: Build
-      working-directory: ${{ working-dir }}
       shell: cmake -P {0}
       run: |
         set(ENV{NINJA_STATUS} "[%f/%t %o/sec] ")
@@ -171,7 +189,7 @@ jobs:
         execute_process(COMMAND ccache -z)
 
         execute_process(
-          COMMAND ${CMAKE_COMMAND} --build build --config Release -j %NUMBER_OF_PROCESSORS%
+          COMMAND ${CMAKE_COMMAND} --build build --config Release
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
@@ -181,21 +199,21 @@ jobs:
         execute_process(COMMAND ccache -s)
 
     - name: Install Strip
-      working-directory: ${{ working-dir }}
       shell: cmake {0}
-      run: | --install instdir -DENABLE_TESTS_OPTION:BOOL=OFF -DBUILD_TYPE=Release -P cmake_install.cmake -j %NUMBER_OF_PROCESSORS%
+      run: |
+        --install instdir -DENABLE_TESTS_OPTION:BOOL=OFF -DBUILD_TYPE=Release -P cmake_install.cmake
 
 
     - name: Pack
-      working-directory: ${{ working-dir }}/instdir
+      working-directory: ${{ env.working-dir }}/instdir
       shell: cmake {0}
-      run: |-E tar cJfv ../${{ matrix.config.artifact }} .
+      run: |
+        -E tar cJfv ../${{ matrix.config.artifact }} .
 
     - name: Upload
-      working-directory: ${{ working-dir }}
       uses: actions/upload-artifact@v1
       with:
-        path: ./${{ matrix.config.artifact }}
+        path:  ${{ env.working-dir }}/${{ matrix.config.artifact }}
         name: ${{ matrix.config.artifact }}
 
   release:
