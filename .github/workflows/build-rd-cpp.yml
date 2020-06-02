@@ -76,8 +76,8 @@ jobs:
         file(DOWNLOAD "${ninja_url}" ./ninja.zip SHOW_PROGRESS)
         file(MAKE_DIRECTORY ninja)
         execute_process(COMMAND
-                        ${CMAKE_COMMAND} -E tar xvf ./ninja.zip
-                        WORKING_DIRECTOYR ${{ env.working-dir }}${{ matrix.config.SEP }}ninja)
+                        ${CMAKE_COMMAND} -E tar xvf ../ninja.zip
+                        WORKING_DIRECTORY ninja)
 
         if (NOT "${{ runner.os }}" STREQUAL "Windows")
           execute_process(
@@ -100,8 +100,8 @@ jobs:
         file(DOWNLOAD "${ccache_url}" ./ccache.tar.xz SHOW_PROGRESS)
         file(MAKE_DIRECTORY ccache)
         execute_process(COMMAND
-                        ${CMAKE_COMMAND} -E tar xvf ./ccache.tar.xz
-                        WORKING_DIRECTOYR ${{ env.working-dir }}${{ matrix.config.SEP }}ccache)
+                        ${CMAKE_COMMAND} -E tar xvf ../ccache.tar.xz
+                        WORKING_DIRECTORY ccache)
 
     - name: Prepare ccache timestamp
       id: ccache_cache_timestamp
@@ -149,11 +149,11 @@ jobs:
             -DENABLE_TESTS_OPTION:BOOL=OFF
             -DCMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
             -G Ninja
-            -DCMAKE_MAKE_PROGRAM=${{ env.working-directory }}${{ matrix.config.SEP }}ninja${{ matrix.config.SEP }}ninja
+            -DCMAKE_MAKE_PROGRAM=${CMAKE_CURRENT_SOURCE_DIR}/ninja/ninja
             -DCMAKE_C_COMPILER_LAUNCHER=ccache
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
              ..
-          WORKING_DIRECTORY ${{ env.working-directory }}${{ matrix.config.SEP }}build
+          WORKING_DIRECTORY build
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
