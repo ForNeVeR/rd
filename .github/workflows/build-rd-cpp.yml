@@ -40,7 +40,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-
+    - name: HACK swap module link
+      run: git config --file=.gitmodules submodule.rd-cpp/thirdparty/spdlog.url https://github.com/gabime/spdlog.git
+      shell: cmd
+    - name: Get submodules
+      run: git submodule update --init --recursive
+      shell: cmd
     - name: Download Ninja
       working-directory: ${{ env.working-dir }}
       id: download_ninja
