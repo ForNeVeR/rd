@@ -162,13 +162,12 @@ jobs:
 
 
     - name: Build
-      working-directory: ${{ env.working-directory }}${{ matrix.config.SEP }}build
       shell: cmake -P {0}
       run: |
         set(ENV{NINJA_STATUS} "[%f/%t %o/sec] ")
 
         if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
-          file(STRINGS ../environment_script_output.txt output_lines)
+          file(STRINGS environment_script_output.txt output_lines)
           foreach(line IN LISTS output_lines)
             if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
               set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
@@ -192,11 +191,13 @@ jobs:
           set(ENV{CCACHE_MAXSIZE} "600M")
         endif()
 
-        execute_process(COMMAND ccache -p)
-        execute_process(COMMAND ccache -z)
+        execute_process(COMMAND ccache -p
+                        WORKING_DIRECTORY build)
+        execute_process(COMMAND ccache -z
+                        WORKING_DIRECTORY build)
 
         execute_process(
-          COMMAND ${CMAKE_COMMAND} --build . --config ${{ env.BUILD_TYPE }}
+          COMMAND ${CMAKE_COMMAND} --build build --config ${{ env.BUILD_TYPE }}
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
