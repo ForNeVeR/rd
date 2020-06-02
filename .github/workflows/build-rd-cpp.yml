@@ -42,6 +42,7 @@ jobs:
     - uses: actions/checkout@v1
 
     - name: Download Ninja
+      working-directory: ${{ working-dir }}
       id: download_ninja
       shell: cmake -P {0}
       run: |
@@ -68,6 +69,7 @@ jobs:
         endif()
 
     - name: Download ccache
+      working-directory: ${{ working-dir }}
       id: ccache
       shell: cmake -P {0}
       run: |
@@ -76,6 +78,7 @@ jobs:
         execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ccache.tar.xz)
 
     - name: Prepare ccache timestamp
+      working-directory: ${{ working-dir }}
       id: ccache_cache_timestamp
       shell: cmake -P {0}
       run: |
@@ -83,6 +86,7 @@ jobs:
         message("::set-output name=timestamp::${current_date}")
 
     - name: ccache cache files
+      working-directory: ${{ working-dir }}
       uses: actions/cache@v1.1.0
       with:
         path: .ccache
@@ -91,6 +95,7 @@ jobs:
           ${{ matrix.config.name }}-ccache-
 
     - name: Configure
+      working-directory: ${{ working-dir }}
       shell: cmake -P {0}
       run: |
         set(ENV{CC} ${{ matrix.config.cc }})
@@ -116,7 +121,7 @@ jobs:
         set(ENV{PATH} "$ENV{GITHUB_WORKSPACE}${path_separator}$ENV{PATH}")
 
         execute_process(
-          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake
+          COMMAND ${CMAKE_COMMAND}
             -S .
             -B build
             -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
@@ -132,6 +137,7 @@ jobs:
 
 
     - name: Build
+      working-directory: ${{ working-dir }}
       shell: cmake -P {0}
       run: |
         set(ENV{NINJA_STATUS} "[%f/%t %o/sec] ")
@@ -165,7 +171,7 @@ jobs:
         execute_process(COMMAND ccache -z)
 
         execute_process(
-          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake --build build
+          COMMAND ${CMAKE_COMMAND} --build build --config Release -j %NUMBER_OF_PROCESSORS%
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
@@ -174,35 +180,19 @@ jobs:
 
         execute_process(COMMAND ccache -s)
 
-    - name: Run tests
-      shell: cmake -P {0}
-      run: |
-        include(ProcessorCount)
-        ProcessorCount(N)
-
-        set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
-
-        execute_process(
-          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/ctest -j ${N}
-          WORKING_DIRECTORY build
-          RESULT_VARIABLE result
-        )
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Running tests failed!")
-        endif()
-
-
     - name: Install Strip
-      run: ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake --install build --prefix instdir --strip
+      working-directory: ${{ working-dir }}
+      shell: cmake {0}
+      run: | --install instdir -DENABLE_TESTS_OPTION:BOOL=OFF -DBUILD_TYPE=Release -P cmake_install.cmake -j %NUMBER_OF_PROCESSORS%
 
 
     - name: Pack
-      working-directory: instdir
+      working-directory: ${{ working-dir }}/instdir
       shell: cmake {0}
       run: |-E tar cJfv ../${{ matrix.config.artifact }} .
 
-
     - name: Upload
+      working-directory: ${{ working-dir }}
       uses: actions/upload-artifact@v1
       with:
         path: ./${{ matrix.config.artifact }}
