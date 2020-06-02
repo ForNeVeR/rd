@@ -15,9 +15,9 @@ jobs:
   build:
     defaults:
       run:
-        working-directory: ${{ github.workspace}}${{ runner.SEP }}rd-cpp
+        working-directory: ${{ github.workspace}}${{ matrix.config.SEP }}rd-cpp
     env:
-      working-dir: ${{ github.workspace}}${{ runner.SEP }}rd-cpp
+      working-dir: ${{ github.workspace}}${{ matrix.config.SEP }}rd-cpp
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     strategy:
@@ -109,7 +109,7 @@ jobs:
     - name: ccache cache files
       uses: actions/cache@v2
       with:
-        path:  ${{ env.working-dir }}${{ runner.SEP }}.ccache
+        path:  ${{ env.working-dir }}${{ matrix.config.SEP }}.ccache
         key: ${{ matrix.config.name }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
         restore-keys: |
           ${{ matrix.config.name }}-ccache-
