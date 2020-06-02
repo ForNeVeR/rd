@@ -88,7 +88,7 @@ jobs:
     - name: ccache cache files
       uses: actions/cache@v2
       with:
-        path: .ccache
+        path:  ${{ env.working-dir }}/.ccache
         key: ${{ matrix.config.name }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
         restore-keys: |
           ${{ matrix.config.name }}-ccache-
@@ -193,10 +193,9 @@ jobs:
         -E tar cJfv ../${{ matrix.config.artifact }} .
 
     - name: Upload
-      working-directory: ${{ env.working-dir }}
       uses: actions/upload-artifact@v1
       with:
-        path: ./${{ matrix.config.artifact }}
+        path:  ${{ env.working-dir }}/${{ matrix.config.artifact }}
         name: ${{ matrix.config.artifact }}
 
   release:
