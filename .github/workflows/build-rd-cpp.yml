@@ -2,9 +2,9 @@ name: CMake Build Matrix
 
 on:
   push:
-    branches: [ ue4-adapt ]
+    branches: [ master ]
   pull_request:
-    branches: [ ue4-adapt ]
+    branches: [ master ]
 
 env:
   NINJA_VERSION: 1.9.0
