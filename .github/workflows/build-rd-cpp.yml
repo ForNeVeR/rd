@@ -47,6 +47,7 @@ jobs:
       run: git config --file=.gitmodules submodule.rd-cpp/thirdparty/spdlog.url https://github.com/gabime/spdlog.git
     - name: Get submodules
       run: git submodule update --init --recursive
+      continue-on-error: true
     - name: Cache Ninja
       id: cache-ninja
       uses: actions/cache@v2
