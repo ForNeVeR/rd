@@ -43,8 +43,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: HACK swap module link
-      run: git config --file=.gitmodules submodule.rd-cpp/thirdparty/spdlog.url https://github.com/gabime/spdlog.git
     - name: Get submodules
       run: git submodule update --init --recursive
       continue-on-error: true
@@ -114,6 +112,7 @@ jobs:
           ${{ matrix.config.name }}-ccache-
 
     - name: Configure
+      working-directory: ${{ env.working-directory }}/build
       shell: cmake -P {0}
       run: |
         set(ENV{CC} ${{ matrix.config.cc }})
@@ -140,8 +139,7 @@ jobs:
 
         execute_process(
           COMMAND ${CMAKE_COMMAND}
-            -S .
-            -B build
+            --build build
             -D ENABLE_TESTS_OPTION:BOOL=OFF
             -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
             -G Ninja
@@ -189,7 +187,7 @@ jobs:
         execute_process(COMMAND ccache -z)
 
         execute_process(
-          COMMAND ${CMAKE_COMMAND} --build build --config Release
+          COMMAND ${CMAKE_COMMAND} --build build --config ${{ env.BUILD_TYPE }}
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
@@ -201,7 +199,7 @@ jobs:
     - name: Install Strip
       shell: cmake {0}
       run: |
-        --install instdir -DENABLE_TESTS_OPTION:BOOL=OFF -DBUILD_TYPE=Release -P cmake_install.cmake
+        --install instdir -DENABLE_TESTS_OPTION:BOOL=OFF -DBUILD_TYPE=${{ env.BUILD_TYPE }} -P cmake_install.cmake
 
 
     - name: Pack
