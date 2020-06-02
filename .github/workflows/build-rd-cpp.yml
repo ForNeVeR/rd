@@ -176,7 +176,7 @@ jobs:
         execute_process(COMMAND ccache -z)
 
         execute_process(
-          COMMAND ${CMAKE_COMMAND} --build build --config Release -j %NUMBER_OF_PROCESSORS%
+          COMMAND ${CMAKE_COMMAND} --build build --config Release
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
@@ -189,7 +189,7 @@ jobs:
       working-directory: ${{ env.working-dir }}
       shell: cmake {0}
       run: |
-        --install instdir -DENABLE_TESTS_OPTION:BOOL=OFF -DBUILD_TYPE=Release -P cmake_install.cmake -j %NUMBER_OF_PROCESSORS%
+        --install instdir -DENABLE_TESTS_OPTION:BOOL=OFF -DBUILD_TYPE=Release -P cmake_install.cmake
 
 
     - name: Pack
