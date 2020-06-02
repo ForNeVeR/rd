@@ -111,9 +111,7 @@ jobs:
             -DENABLE_TESTS_OPTION:BOOL=OFF
             -DCMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
             -G Ninja
-            -DCMAKE_MAKE_PROGRAM=ninja
-            -DCMAKE_C_COMPILER_LAUNCHER=${{ matrix.config.cc }}
-            -DCMAKE_CXX_COMPILER_LAUNCHER=${{ matrix.config.cxx }}
+            -DCMAKE_MAKE_PROGRAM=./ninja
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
