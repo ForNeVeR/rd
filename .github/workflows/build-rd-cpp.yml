@@ -87,7 +87,7 @@ jobs:
 
     - name: ccache cache files
       working-directory: ${{ env.working-dir }}
-      uses: actions/cache@v1.1.0
+      uses: actions/cache@v2
       with:
         path: .ccache
         key: ${{ matrix.config.name }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
