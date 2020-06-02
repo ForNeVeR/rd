@@ -183,13 +183,15 @@ jobs:
     - name: Install Strip
       working-directory: ${{ working-dir }}
       shell: cmake {0}
-      run: |--install instdir -DENABLE_TESTS_OPTION:BOOL=OFF -DBUILD_TYPE=Release -P cmake_install.cmake -j %NUMBER_OF_PROCESSORS%
+      run: |
+        --install instdir -DENABLE_TESTS_OPTION:BOOL=OFF -DBUILD_TYPE=Release -P cmake_install.cmake -j %NUMBER_OF_PROCESSORS%
 
 
     - name: Pack
       working-directory: ${{ working-dir }}/instdir
       shell: cmake {0}
-      run: |-E tar cJfv ../${{ matrix.config.artifact }} .
+      run: |
+        -E tar cJfv ../${{ matrix.config.artifact }} .
 
     - name: Upload
       working-directory: ${{ working-dir }}
