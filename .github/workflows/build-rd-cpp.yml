@@ -85,12 +85,6 @@ jobs:
           )
         endif()
 
-    - name: Cache ccache
-      id: cache-ccache
-      uses: actions/cache@v2
-      with:
-        path:  ${{ env.working-dir }}${{ matrix.config.SEP }}ccache
-        key: ${{ runner.os }}-ccache-
     - name: Download ccache
       if: steps.cache-ccache.outputs.cache-hit != 'true'
       id: ccache
@@ -99,9 +93,7 @@ jobs:
         set(ccache_url "https://github.com/cristianadam/ccache/releases/download/v$ENV{CCACHE_VERSION}/${{ runner.os }}.tar.xz")
         file(DOWNLOAD "${ccache_url}" ./ccache.tar.xz SHOW_PROGRESS)
         file(MAKE_DIRECTORY ccache)
-        execute_process(COMMAND
-                        ${CMAKE_COMMAND} -E tar xvf ../ccache.tar.xz
-                        WORKING_DIRECTORY ccache)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ccache.tar.xz)
 
     - name: Prepare ccache timestamp
       id: ccache_cache_timestamp
@@ -149,9 +141,9 @@ jobs:
             -DENABLE_TESTS_OPTION:BOOL=OFF
             -DCMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
             -G Ninja
-            -DCMAKE_MAKE_PROGRAM=${CMAKE_CURRENT_SOURCE_DIR}/ninja/ninja
-            -DCMAKE_C_COMPILER_LAUNCHER=ccache
-            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+            -DCMAKE_MAKE_PROGRAM=${CMAKE_CURRENT_SOURCE_DIR}/ninja
+            -DCMAKE_C_COMPILER_LAUNCHER=${CMAKE_CURRENT_SOURCE_DIR}/ccache
+            -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CURRENT_SOURCE_DIR}/ccache
              ..
           WORKING_DIRECTORY build
           RESULT_VARIABLE result
@@ -191,9 +183,9 @@ jobs:
           set(ENV{CCACHE_MAXSIZE} "600M")
         endif()
 
-        execute_process(COMMAND ccache/ccache -p
+        execute_process(COMMAND ccache -p
                         WORKING_DIRECTORY build)
-        execute_process(COMMAND ccache/ccache -z
+        execute_process(COMMAND ccache -z
                         WORKING_DIRECTORY build)
 
         execute_process(
