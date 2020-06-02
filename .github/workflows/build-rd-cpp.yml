@@ -109,7 +109,7 @@ jobs:
     - name: ccache cache files
       uses: actions/cache@v2
       with:
-        path:  ${{ env.working-dir }}${{ matrix.config.SEP }}.ccache
+        path:  ${{ env.working-dir }}${{ runner.SEP }}.ccache
         key: ${{ matrix.config.name }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
         restore-keys: |
           ${{ matrix.config.name }}-ccache-
@@ -142,13 +142,14 @@ jobs:
         file(MAKE_DIRECTORY build)
         execute_process(
           COMMAND ${CMAKE_COMMAND}
-            --build build
             -DENABLE_TESTS_OPTION:BOOL=OFF
             -DCMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
             -G Ninja
             -DCMAKE_MAKE_PROGRAM=ninja
             -DCMAKE_C_COMPILER_LAUNCHER=ccache
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+             ..
+          WORKING_DIRECTORY ${{ env.working-directory }}${{ runner.SEP }}build
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
