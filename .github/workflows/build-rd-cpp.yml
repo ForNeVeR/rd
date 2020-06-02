@@ -53,7 +53,7 @@ jobs:
       id: cache-ninja
       uses: actions/cache@v2
       with:
-        path: ${{ env.working-dir }}${{ runner.SEP }}ninja
+        path: ${{ env.working-dir }}${{ matrix.config.SEP }}ninja
         key: ${{ runner.os }}-ninja-
     - name: Download Ninja
       if: steps.cache-ninja.outputs.cache-hit != 'true'
@@ -87,7 +87,7 @@ jobs:
       id: cache-ccache
       uses: actions/cache@v2
       with:
-        path:  ${{ env.working-dir }}${{ runner.SEP }}ccache
+        path:  ${{ env.working-dir }}${{ matrix.config.SEP }}ccache
         key: ${{ runner.os }}-ccache-
     - name: Download ccache
       if: steps.cache-ccache.outputs.cache-hit != 'true'
@@ -109,7 +109,7 @@ jobs:
     - name: ccache cache files
       uses: actions/cache@v2
       with:
-        path:  ${{ env.working-dir }}${{ runner.SEP }}.ccache
+        path:  ${{ env.working-dir }}${{ matrix.config.SEP }}.ccache
         key: ${{ matrix.config.name }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
         restore-keys: |
           ${{ matrix.config.name }}-ccache-
@@ -145,11 +145,11 @@ jobs:
             -DENABLE_TESTS_OPTION:BOOL=OFF
             -DCMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
             -G Ninja
-            -DCMAKE_MAKE_PROGRAM=${{ env.working-directory }}${{ runner.SEP }}ninja${{ runner.SEP }}ninja
+            -DCMAKE_MAKE_PROGRAM=${{ env.working-directory }}${{ matrix.config.SEP }}ninja${{ matrix.config.SEP }}ninja
             -DCMAKE_C_COMPILER_LAUNCHER=ccache
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
              ..
-          WORKING_DIRECTORY ${{ env.working-directory }}${{ runner.SEP }}build
+          WORKING_DIRECTORY ${{ env.working-directory }}${{ matrix.config.SEP }}build
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
@@ -158,7 +158,7 @@ jobs:
 
 
     - name: Build
-      working-directory: ${{ env.working-directory }}${{ runner.SEP }}build
+      working-directory: ${{ env.working-directory }}${{ matrix.config.SEP }}build
       shell: cmake -P {0}
       run: |
         set(ENV{NINJA_STATUS} "[%f/%t %o/sec] ")
@@ -208,7 +208,7 @@ jobs:
 
 
     - name: Pack
-      working-directory: ${{ env.working-dir }}${{ runner.SEP }}instdir
+      working-directory: ${{ env.working-dir }}${{ matrix.config.SEP }}instdir
       shell: cmake {0}
       run: |
         -E tar cJfv ../${{ matrix.config.artifact }} .
@@ -216,7 +216,7 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v1
       with:
-        path:  ${{ env.working-dir }}${{ runner.SEP }}${{ matrix.config.artifact }}
+        path:  ${{ env.working-dir }}${{ matrix.config.SEP }}${{ matrix.config.artifact }}
         name: ${{ matrix.config.artifact }}
 
   release:
