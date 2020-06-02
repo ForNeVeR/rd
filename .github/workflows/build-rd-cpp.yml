@@ -75,11 +75,11 @@ jobs:
         set(ninja_url "https://github.com/ninja-build/ninja/releases/download/v${ninja_version}/ninja-${ninja_suffix}")
         file(DOWNLOAD "${ninja_url}" ./ninja.zip SHOW_PROGRESS)
         file(MAKE_DIRECTORY ninja)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ninja.zip -C ninja)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E tar -C ninja xvf ./ninja.zip)
 
         if (NOT "${{ runner.os }}" STREQUAL "Windows")
           execute_process(
-            COMMAND chmod +x ninja
+            COMMAND chmod +x ninja/ninja
           )
         endif()
 
@@ -97,7 +97,7 @@ jobs:
         set(ccache_url "https://github.com/cristianadam/ccache/releases/download/v$ENV{CCACHE_VERSION}/${{ runner.os }}.tar.xz")
         file(DOWNLOAD "${ccache_url}" ./ccache.tar.xz SHOW_PROGRESS)
         file(MAKE_DIRECTORY ccache)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ccache.tar.xz -C ccache)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E tar -C ccache xvf ./ccache.tar.xz)
 
     - name: Prepare ccache timestamp
       id: ccache_cache_timestamp
@@ -145,7 +145,7 @@ jobs:
             -DENABLE_TESTS_OPTION:BOOL=OFF
             -DCMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
             -G Ninja
-            -DCMAKE_MAKE_PROGRAM=ninja
+            -DCMAKE_MAKE_PROGRAM=${{ env.working-directory }}${{ runner.SEP }}ninja${{ runner.SEP }}ninja
             -DCMAKE_C_COMPILER_LAUNCHER=ccache
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
              ..
