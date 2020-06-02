@@ -24,25 +24,25 @@ jobs:
       fail-fast: false
       matrix:
         config:
-        - {
-            name: "Windows Latest MSVC", artifact: "Windows-MSVC.tar.xz",
-            os: windows-latest,
-            cc: "cl", cxx: "cl",
-            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
-            SEP: \
-          }
+#        - {
+#            name: "Windows Latest MSVC", artifact: "Windows-MSVC.tar.xz",
+#            os: windows-latest,
+#            cc: "cl", cxx: "cl",
+#            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
+#            SEP: \
+#          }
         - {
             name: "Ubuntu Latest Clang", artifact: "Linux.tar.xz",
             os: ubuntu-latest,
             cc: "clang", cxx: "clang++",
             SEP: /
           }
-        - {
-            name: "macOS Latest Clang", artifact: "macOS.tar.xz",
-            os: macos-latest,
-            cc: "clang", cxx: "clang++",
-            SEP: /
-          }
+#        - {
+#            name: "macOS Latest Clang", artifact: "macOS.tar.xz",
+#            os: macos-latest,
+#            cc: "clang", cxx: "clang++",
+#            SEP: /
+#          }
 
     steps:
     - uses: actions/checkout@v1
@@ -78,6 +78,8 @@ jobs:
           )
         endif()
 
+    - run: ls -l
+      shell: bash
     - name: Configure
       shell: cmake -P {0}
       run: |
@@ -113,7 +115,7 @@ jobs:
             -DENABLE_TESTS_OPTION:BOOL=OFF
             -DCMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
             -G Ninja
-            -DCMAKE_MAKE_PROGRAM=ninja
+            -DCMAKE_MAKE_PROGRAM=${CMAKE_CURRENT_SOURCE_DIR}/ninja
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
